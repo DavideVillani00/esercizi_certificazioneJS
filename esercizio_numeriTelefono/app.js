@@ -3,15 +3,9 @@ const checkBtn = document.querySelector("#check-btn");
 const clearBtn = document.querySelector("#clear-btn");
 const pResult = document.querySelector("#results-div");
 
-const pattern = [
-  /^[1]{1} [\d]{3}-[\d]{3}-[\d]{4}$/,
-  /^[1]{1} \([\d]{3}\) [\d]{3}-[\d]{4}$/,
-  /^[1]{1}\([\d]{3}\)[\d]{3}-[\d]{4}$/,
-  /^[1]{1} [\d]{3} [\d]{3} [\d]{4}$/,
-  /^[\d]{10}$/,
-  /^[\d]{3}-[\d]{3}-[\d]{4}$/,
-  /^\([\d]{3}\)[\d]{3}-[\d]{4}$/,
-];
+// ncell = 10 numeri
+// nprefisso all'inizio (1)
+// le parentesi possono circondare solo i primi 3 numeri escluso il prefisso
 
 clearBtn.addEventListener("click", () => (pResult.textContent = ""));
 checkBtn.addEventListener("click", () => {
@@ -20,12 +14,28 @@ checkBtn.addEventListener("click", () => {
   if (number == "") {
     return alert("Please provide a phone number");
   }
+  const clearNumber = number.match(/\d/g);
+  const numberLength = clearNumber.length;
+  console.log(clearNumber, numberLength, valid);
+  if (numberLength < 10) {
+    console.log("troppo corto");
+    return (valid = false);
+  }
+  const prefixLength = numberLength - 10;
+  console.log(prefixLength);
 
-  pattern.forEach((el) => {
-    if (el.test(number)) {
-      valid = true;
+  if (prefixLength > 0) {
+    const prefix = clearNumber.slice(0, prefixLength);
+    console.log(prefix);
+    if (prefix.join() != 1) {
+      console.log("prefisso non valido", prefix);
+      return (valid = false);
     }
-  });
+    console.log("prefisso valido");
+  }
+
+  console.log(clearNumber, valid);
+
   pResult.textContent = valid
     ? `Valid US number: ${number}`
     : `Invalid US number: ${number}`;
