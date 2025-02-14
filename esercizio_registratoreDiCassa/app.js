@@ -18,7 +18,7 @@ const purchaseBtn = document.querySelector("#purchase-btn");
 purchaseBtn.addEventListener("click", () => {
   const cash = cashInput.value;
   let changeDue = cash - price;
-  console.log(changeDue);
+  // console.log(changeDue);
   if (changeDue < 0) {
     alert("Customer does not have enough money to purchase the item");
     return;
@@ -31,13 +31,17 @@ purchaseBtn.addEventListener("click", () => {
     // , poi si sottrae dalla cassa i soldi con le monete esatte
     // e si mostra il resto
     // ad ogni click btn controlli lo stato della cassa e aggiorni il p
+    const changeDueArr = [];
     let sumRegistrator = 0;
-    cid.forEach((el) => sumRegistrator + el[1]);
+    cid.forEach((el) => {
+      sumRegistrator += el[1];
+    });
+    console.log(changeDue, sumRegistrator);
     if (sumRegistrator < changeDue) {
       changeDueDiv.textContent = "Status: INSUFFICIENT_FUNDS";
       return;
     } else {
-      cid.reverse().map((el) => {
+      cid.reverse().map((el, index) => {
         if (changeDue > 0 && sumRegistrator > 0) {
           let soldo;
 
@@ -76,11 +80,15 @@ purchaseBtn.addEventListener("click", () => {
           ) {
             changeDue -= soldo;
             el[1] -= soldo;
-            console.log(changeDue.toFixed(2), soldo);
+            // devo controllare se esiste già l'elemento, che in caso devo sommare e non aggiungere un nuovo array
+            changeDueArr.push([cid[index][0], soldo]);
+
+            // console.log(changeDueArr);
+            // console.log(changeDue.toFixed(2), soldo);
           }
         }
       });
     }
-    console.log(cid);
+    // console.log(cid);
   }
 });
