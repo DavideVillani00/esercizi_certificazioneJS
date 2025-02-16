@@ -25,27 +25,22 @@ purchaseBtn.addEventListener("click", () => {
     changeDueDiv.textContent = "No change due - customer paid with exact cash";
     return;
   } else {
-    // se l'importo della cassa è superiore al resto
-    // si deve dare i soldi partendo da quello che vale di piu e scendendo
-    // , poi si sottrae dalla cassa i soldi con le monete esatte
-    // e si mostra il resto
-    // ad ogni click btn controlli lo stato della cassa e aggiorni il p
-    const changeDueArr = [];
+    let changeDueArr = [];
     let sumRegistrator = 0;
     cid.forEach((el) => {
       sumRegistrator += el[1];
     });
-    // console.log(changeDue, sumRegistrator);
+
     if (sumRegistrator < changeDue) {
       changeDueDiv.textContent = "Status: INSUFFICIENT_FUNDS";
       return;
     } else {
-      if (sumRegistrator === changeDue) {
+      if (sumRegistrator == changeDue) {
         changeDueDiv.textContent = "Status: CLOSED";
       } else {
         changeDueDiv.textContent = "Status: OPEN";
       }
-      cid.reverse().map((el, index) => {
+      cid.reverse().forEach((el, index) => {
         if (changeDue > 0 && sumRegistrator > 0) {
           let soldo;
 
@@ -78,42 +73,51 @@ purchaseBtn.addEventListener("click", () => {
               soldo = 0.01;
               break;
           }
-          // !da sistemare questa parte, non utilizza la stessa moneta quando può
-          console.log(changeDue, soldo);
-          console.log("ciao", el[1] - soldo, changeDue - soldo);
-          while (
-            (el[1] - soldo).toFixed(2) >= 0 &&
-            (changeDue - soldo).toFixed(2) > 0
-          ) {
-            changeDue -= soldo;
-            el[1] -= soldo;
+
+          while (el[1] - soldo >= 0 && changeDue - soldo >= 0) {
+            console.log(
+              "el[1]",
+              el[1],
+              "soldo",
+              soldo,
+              "changeDue",
+              changeDue,
+              "el[1] - soldo",
+              el[1] - soldo,
+              "changeDue - soldo",
+              changeDue - soldo
+            );
+            changeDue = Number((changeDue - soldo).toFixed(2));
+            el[1] = Number((el[1] - soldo).toFixed(2));
+            console.log(soldo);
             changeDueArr.push([cid[index][0], soldo]);
           }
         }
       });
-      const resultChangeDue = changeDueArr.filter((_, index, array) => {
-        let money = "";
-        let value = 0;
-        if (index === 0) {
-          money = changeDueArr[index][0];
-          value = changeDueArr[index][1];
-          return [money, value];
-        } else {
-          if (changeDueArr[index][0] == changeDueArr[index - 1][0]) {
-            value = changeDueArr[index][1];
-            array[index - 1][1] += value;
-            return;
-          } else {
-            money = changeDueArr[index][0];
-            value = changeDueArr[index][1];
-            return [money, value];
-          }
-        }
-      });
+      // funzione per sommare duplicati
+      function sumDuplicate(arr) {
+        let somma = {};
 
-      resultChangeDue.forEach((el) => {
-        changeDueDiv.textContent += ` ${el[0]}: $${el[1]}`;
-      });
+        arr.forEach(([currency, amount]) => {
+          if (somma[currency]) {
+            somma[currency] = Number((somma[currency] + amount).toFixed(2));
+          } else {
+            somma[currency] = amount;
+          }
+        });
+        return Object.entries(somma);
+      }
+      changeDueArr = sumDuplicate(changeDueArr);
+      console.log(changeDue);
+      if (changeDue != 0) {
+        changeDueDiv.textContent = "Status: INSUFFICIENT_FUNDS";
+      } else if (sumRegistrator == 0) {
+        changeDueDiv.textContent = "Status: CLOSED";
+      } else {
+        changeDueArr.forEach((el) => {
+          changeDueDiv.textContent += ` ${el[0]}: $${el[1]}`;
+        });
+      }
     }
   }
 });
