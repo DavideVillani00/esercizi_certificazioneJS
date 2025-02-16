@@ -1,4 +1,4 @@
-let price = 1.87;
+let price = 19.5;
 let cid = [
   ["PENNY", 1.01], //0.01$
   ["NICKEL", 2.05], //0.05$
@@ -18,7 +18,6 @@ const purchaseBtn = document.querySelector("#purchase-btn");
 purchaseBtn.addEventListener("click", () => {
   const cash = cashInput.value;
   let changeDue = cash - price;
-  // console.log(changeDue);
   if (changeDue < 0) {
     alert("Customer does not have enough money to purchase the item");
     return;
@@ -26,22 +25,21 @@ purchaseBtn.addEventListener("click", () => {
     changeDueDiv.textContent = "No change due - customer paid with exact cash";
     return;
   } else {
-    // se l'importo della cassa è superiore al resto
-    // si deve dare i soldi partendo da quello che vale di piu e scendendo
-    // , poi si sottrae dalla cassa i soldi con le monete esatte
-    // e si mostra il resto
-    // ad ogni click btn controlli lo stato della cassa e aggiorni il p
-    const changeDueArr = [];
+    let changeDueArr = [];
     let sumRegistrator = 0;
     cid.forEach((el) => {
       sumRegistrator += el[1];
     });
-    console.log(changeDue, sumRegistrator);
     if (sumRegistrator < changeDue) {
       changeDueDiv.textContent = "Status: INSUFFICIENT_FUNDS";
       return;
     } else {
-      cid.reverse().map((el, index) => {
+      if (sumRegistrator == changeDue) {
+        changeDueDiv.textContent = "Status: CLOSED";
+      } else {
+        changeDueDiv.textContent = "Status: OPEN";
+      }
+      cid.reverse().forEach((el, index) => {
         if (changeDue > 0 && sumRegistrator > 0) {
           let soldo;
 
@@ -74,21 +72,37 @@ purchaseBtn.addEventListener("click", () => {
               soldo = 0.01;
               break;
           }
-          while (
-            (el[1] - soldo).toFixed(2) >= 0 &&
-            (changeDue - soldo).toFixed(2) > 0
-          ) {
-            changeDue -= soldo;
-            el[1] -= soldo;
-            // devo controllare se esiste già l'elemento, che in caso devo sommare e non aggiungere un nuovo array
-            changeDueArr.push([cid[index][0], soldo]);
 
-            // console.log(changeDueArr);
-            // console.log(changeDue.toFixed(2), soldo);
+          while (el[1] - soldo >= 0 && changeDue - soldo >= 0) {
+            changeDue = Number((changeDue - soldo).toFixed(2));
+            el[1] = Number((el[1] - soldo).toFixed(2));
+            changeDueArr.push([cid[index][0], soldo]);
           }
         }
       });
+      // funzione per sommare duplicati
+      function sumDuplicate(arr) {
+        let somma = {};
+
+        arr.forEach(([currency, amount]) => {
+          if (somma[currency]) {
+            somma[currency] = Number((somma[currency] + amount).toFixed(2));
+          } else {
+            somma[currency] = amount;
+          }
+        });
+        return Object.entries(somma);
+      }
+      changeDueArr = sumDuplicate(changeDueArr);
+      if (changeDue != 0) {
+        changeDueDiv.textContent = "Status: INSUFFICIENT_FUNDS";
+      } else if (sumRegistrator == 0) {
+        changeDueDiv.textContent = "Status: CLOSED";
+      } else {
+        changeDueArr.forEach((el) => {
+          changeDueDiv.textContent += ` ${el[0]}: $${el[1]}`;
+        });
+      }
     }
-    // console.log(cid);
   }
 });
